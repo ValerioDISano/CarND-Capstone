@@ -4,6 +4,7 @@ import numpy as np
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
+from std_msgs.msg import Int32
 from scipy.spatial import KDTree
 
 import math
@@ -43,7 +44,7 @@ class WaypointUpdater(object):
         self.base_waypoints = None
         self.waypoints_2d = None
         self.waypoints_tree = None
-
+        self.stopline_wp_idx = -1
         self.loop()
 
     def loop(self):
@@ -51,7 +52,7 @@ class WaypointUpdater(object):
         while not rospy.is_shutdown():
             if self.pose and self.base_waypoints:
                 # Find closest waypoint to car location
-                closest_waypoint_idx = self.get_closest_waypoint_idx()
+                closest_waypoint_idx = self.get_closest_waypoint()
                 self.publish_waypoints(closest_waypoint_idx)
             rate.sleep()
 
@@ -68,7 +69,7 @@ class WaypointUpdater(object):
     def get_closest_waypoint(self):
         x = self.pose.pose.position.x
         y = self.pose.pose.position.y
-        closest_idx = self.waypoint_tree.query([x, y], 1)[1]
+        closest_idx = self.waypoints_tree.query([x, y], 1)[1]
 
         closest_coord = self.waypoints_2d[closest_idx]
         prev_coord = self.waypoints_2d[closest_idx - 1]
@@ -95,13 +96,15 @@ class WaypointUpdater(object):
 
         closest_idx = self.get_closest_waypoint()
         farthest_idx = closest_idx + LOOKAHEAD_WPS
-        base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
+        base_waypoints = self.base_waypoints.waypoints[closest_idx:farthest_idx]
 
         if self.stopline_wp_idx == -1 or (self.stopline_wp_idx >= farthest_idx):
             lane.waypoints = base_waypoints
         else:
             lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
-    
+
+        return lane
+
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
         for i,wp in enumerate(waypoints):

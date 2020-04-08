@@ -46,11 +46,11 @@ class Controller(object):
         
         steering = self.yaw_controller.get_steering(linear_vel, angular_vel, current_vel)
         
-        vel_err = liner_vel - current_vel
+        vel_error = linear_vel - current_vel
         self.last_vel = current_vel
 
         current_time = rospy.get_time()
-        sample_time = current_time - last_time
+        sample_time = current_time - self.last_time
         self.last_time = current_time
 
         throttle = self.throttle_controller.step(vel_error, sample_time)
