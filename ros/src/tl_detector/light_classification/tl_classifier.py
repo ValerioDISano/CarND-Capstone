@@ -46,7 +46,6 @@ class TLClassifier(object):
         # The classification of the object (integer id).
         self.detection_classes = self.detection_graph.get_tensor_by_name('detection_classes:0')
 
-        rospy.logwarn('CLASSIFIER CREATED!!!!!')
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
 
@@ -59,7 +58,6 @@ class TLClassifier(object):
         """
         image_np = np.expand_dims(np.asarray(image, dtype=np.uint8), 0)
         with tf.Session(graph=self.detection_graph) as sess:
-            rospy.logwarn('CLASSIFIER RUNNING!!!!!')
             # Actual detection.
             (boxes, scores, classes) = sess.run([self.detection_boxes, self.detection_scores, self.detection_classes],
                                                 feed_dict={self.image_tensor: image_np})
