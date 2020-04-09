@@ -48,7 +48,7 @@ class WaypointUpdater(object):
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(30)
+        rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             if self.pose and self.base_waypoints:
                 # Find closest waypoint to car location
@@ -120,7 +120,7 @@ class WaypointUpdater(object):
 
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
             temp.append(p)
-        rospy.logwarn('DECELLERATE')
+        rospy.logwarn('DECELERATE')
         return temp
 
     def traffic_cb(self, msg):
