@@ -25,5 +25,5 @@
     <include file="$(find camera_info_publisher)/launch/camera_info_publisher.launch"/>
     
     <!--Classifier location -->
-    <param name="traffic_light_classifier" value="$(find tl_detector)/light_classification/frozen_inference_graph.pb" />
+    <param name="traffic_light_classifier" value="$(find tl_detector)/light_classification/ssd_classifer.pb" />
 </launch>
