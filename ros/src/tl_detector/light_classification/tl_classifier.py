@@ -67,21 +67,16 @@ class TLClassifier(object):
             scores = np.squeeze(scores)
             classes = np.squeeze(classes)
 
-            #rospy.logwarn('SCORES: {}'.format(scores))
-
             confidence_cutoff = 0.5
             # Filter boxes with a confidence score less than `confidence_cutoff`
             boxes, scores, classes = filter_boxes(confidence_cutoff, boxes, scores, classes)
             if classes.size != 0:
 
                 if classes[0] == 1:
-                    rospy.logwarn('GREEN')
                     return TrafficLight.GREEN
                 elif classes[0] == 2:
-                    rospy.logwarn('RED')
                     return TrafficLight.RED
                 elif classes[0] == 3:
-                    rospy.logwarn('YELLOW')
                     return TrafficLight.YELLOW
 
         #TODO implement light color prediction

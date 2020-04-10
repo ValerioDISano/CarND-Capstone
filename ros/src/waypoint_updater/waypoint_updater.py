@@ -122,7 +122,6 @@ class WaypointUpdater(object):
 
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
             temp.append(p)
-        rospy.logwarn('DECELERATE')
         return temp
 
     def traffic_cb(self, msg):
