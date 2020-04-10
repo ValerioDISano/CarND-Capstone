@@ -69,7 +69,7 @@ class TLClassifier(object):
 
             #rospy.logwarn('SCORES: {}'.format(scores))
 
-            confidence_cutoff = 0.7
+            confidence_cutoff = 0.5
             # Filter boxes with a confidence score less than `confidence_cutoff`
             boxes, scores, classes = filter_boxes(confidence_cutoff, boxes, scores, classes)
             if classes.size != 0:

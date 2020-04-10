@@ -21,6 +21,7 @@ class TLDetector(object):
         self.pose = None
         self.waypoints = None
         self.waypoints_2d = None
+        self.waypoint_tree = None
         self.camera_image = None
         self.has_image = None
         self.lights = []
@@ -33,9 +34,8 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+        self.processed_frames = 0
 
-        sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
         '''
         /vehicle/traffic_lights provides you with the location of the traffic light in 3D map space and
@@ -44,8 +44,6 @@ class TLDetector(object):
         simulator. When testing on the vehicle, the color state will not be available. You'll need to
         rely on the position of the light and the camera image to predict it.
         '''
-        sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
-        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
@@ -53,13 +51,18 @@ class TLDetector(object):
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
 
 
+        sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
+        sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
+        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
         self.loop()
 
     def loop(self):
 
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(30)
 
         while not rospy.is_shutdown():
+            self.processed_frames += 1
             light_wp, state = self.process_traffic_lights()
             if self.state != state:
                 self.state_count = 0
@@ -128,6 +131,9 @@ class TLDetector(object):
 
         """
         #TODO implement
+        if not self.waypoint_tree:
+            return -1
+
         closest_idx = self.waypoint_tree.query([x, y], 1)[1]
         return closest_idx
 
@@ -160,7 +166,8 @@ class TLDetector(object):
 
         """
         closest_light = None
-
+        if self.processed_frames % 1 != 0 or not self.waypoints:
+            return self.last_wp, self.state
         # List of positions that correspond to the line to stop in front of for a given intersection
         stop_line_positions = self.config['stop_line_positions']
         if(self.pose):
